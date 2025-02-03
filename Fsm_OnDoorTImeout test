@@ -1,0 +1,24 @@
+func Fsm_onDoorTimeout(e elevator.Elevator) elevator.Elevator {
+    fmt.Printf("My behavior entering: %v\n", e.Behaviour)
+
+    if e.Behaviour == elevator.EB_DoorOpen {
+        var pair requests.DirnBehaviourPair = requests.RequestsChooseDirection(e)
+        e.Dirn = pair.Dirn
+        e.Behaviour = pair.ElevatorBehaviour
+
+        fmt.Printf("pair behaviour %v\n", e.Behaviour)
+        fmt.Printf("My behavior pre switch: %v\n", e.Behaviour)
+
+        if e.Behaviour == elevator.EB_DoorOpen {
+            timer.TimerStart(config.DoorOpenDurationS.Seconds())
+            e = requests.RequestsClearAtCurrentFloor(e)
+            SetAllLights(e)
+        } else {
+            elevio.SetDoorOpenLamp(false)  // Ensure the door closes
+            elevio.SetMotorDirection(e.Dirn)
+        }
+    }
+
+    fmt.Printf("\nNew state: %v\n", e.Behaviour)
+    return e
+}
